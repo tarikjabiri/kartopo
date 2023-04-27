@@ -1,35 +1,19 @@
-import { ActionIcon, Group, Paper } from "@mantine/core";
-import { IconFileExport, IconFileImport } from "@tabler/icons-react";
-import * as L from "leaflet";
+import { Paper } from "@mantine/core";
 import { useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
+import { MapWidget } from "./map-widget";
 
 export default function Map() {
-  const mapMounted = useRef(false);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapWidgetRef = useRef<MapWidget | null>(null);
 
   useEffect(() => {
-    if (!mapMounted.current) {
-      const map = L.map("map").setView([51.505, -0.09], 13);
-
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
-      mapMounted.current = true;
+    if (mapWidgetRef.current === null) {
+      if (mapContainerRef.current) {
+        mapWidgetRef.current = new MapWidget(mapContainerRef.current);
+      }
     }
   }, []);
 
-  return (
-    <>
-      <Group mb={'xs'}  spacing="xs">
-        <ActionIcon variant="outline" size={"lg"}>
-          <IconFileExport />
-        </ActionIcon>
-        <ActionIcon variant="outline" size={"lg"}>
-          <IconFileImport />
-        </ActionIcon>
-      </Group>
-      <Paper shadow="sm" id="map"></Paper>
-    </>
-  );
+  return <Paper ref={mapContainerRef} shadow="sm" id="map" />;
 }
