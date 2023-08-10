@@ -22,7 +22,7 @@ export class MapManager {
     if (MapManager.map) return;
     MapManager.map = L.map(element, MapManager.options());
     MapManager.map.setView([51.505, -0.09], 13);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+    L.tileLayer("http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}").addTo(
       MapManager.map
     );
     MapManager.map.addControl(new ExportControl(options.export));
