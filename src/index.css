@@ -1,0 +1,18 @@
+#root {
+  height: 100vh;
+}
+
+#k_map {
+  height: calc(100%);
+}
+
+.leaflet-control-export {
+  cursor: pointer;
+}
+
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: initial;
+}
