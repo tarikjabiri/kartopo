@@ -42,13 +42,11 @@ export class ExportControl extends L.Control {
     event.preventDefault();
     event.stopPropagation();
     this.export[1].open();
-    console.log(event);
   }
 
   private _clicki(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.export[1].open();
-    console.log(event);
   }
 }

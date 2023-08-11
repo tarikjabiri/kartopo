@@ -6,8 +6,17 @@
   height: calc(100%);
 }
 
-.leaflet-control-export {
+.leaflet-control-export,
+.leaflet-control-import {
   cursor: pointer;
+}
+
+.leaflet-control-coords {
+  background-color: white;
+  font-size: large;
+  font-weight: bold;
+  padding: 0 4px;
+  font-family: monospace;
 }
 
 .leaflet-pane,
