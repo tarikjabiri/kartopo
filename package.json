@@ -15,6 +15,9 @@
     "@mantine/core": "^6.0.19",
     "@mantine/hooks": "^6.0.19",
     "@tabler/icons-react": "^2.30.0",
+    "@tarikjabiri/dxf": "^2.8.9",
+    "file-saver": "^2.0.5",
+    "geojson": "^0.5.0",
     "leaflet": "^1.9.4",
     "leaflet.gridlayer.googlemutant": "^0.14.0",
     "proj4": "^2.9.0",
@@ -22,6 +25,8 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.5",
+    "@types/geojson": "^7946.0.10",
     "@types/leaflet": "^1.9.3",
     "@types/leaflet.gridlayer.googlemutant": "^0.4.6",
     "@types/proj4": "^2.5.2",

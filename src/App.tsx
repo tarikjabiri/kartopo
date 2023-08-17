@@ -6,7 +6,6 @@ export default function App() {
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
-      // theme={{ colorScheme: "dark" }}
     >
       <KMap />
     </MantineProvider>

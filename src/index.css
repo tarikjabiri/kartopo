@@ -6,8 +6,7 @@
   height: calc(100%);
 }
 
-.leaflet-control-export,
-.leaflet-control-import {
+.leaflet-control-cursor {
   cursor: pointer;
 }
 
@@ -17,11 +16,4 @@
   font-weight: bold;
   padding: 0 4px;
   font-family: monospace;
-}
-
-.leaflet-pane,
-.leaflet-control,
-.leaflet-top,
-.leaflet-bottom {
-  z-index: initial;
 }

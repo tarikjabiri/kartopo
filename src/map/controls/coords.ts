@@ -1,5 +1,4 @@
 import * as L from "leaflet";
-import proj4 from "proj4";
 import { MapManager } from "..";
 
 export class CoordsControl extends L.Control {
@@ -14,13 +13,14 @@ export class CoordsControl extends L.Control {
     div.classList.add("leaflet-control-zoom", "leaflet-control", "leaflet-bar");
     div.classList.add("leaflet-control-coords");
 
+    div.setAttribute("hidden", "");
+
     map.on("mousemove", (event) => {
       const p = event.latlng;
-      const [x, y] = proj4(MapManager.projection).forward([p.lng, p.lat]);
+      const [x, y] = MapManager.converter().forward([p.lng, p.lat]);
       div.innerText = `X=${x.toFixed(2)} | Y=${y.toFixed(2)}`;
-    });
-    map.on("click", (event) => {
-      console.log(event.latlng);
+
+      if (div.hasAttribute("hidden")) div.removeAttribute("hidden");
     });
 
     return div;

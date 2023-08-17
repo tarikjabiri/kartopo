@@ -3,31 +3,34 @@ import { useEffect, useRef, useState } from "react";
 import { MapManager } from "../map";
 import { useDisclosure } from "@mantine/hooks";
 import KProjectionModal from "./KProjectionModal";
+import KExportModal from "./KExportModal";
 
 export default function KMap() {
   const ref = useRef<HTMLDivElement>(null);
   const proj = useDisclosure(false);
-  const [projection, setProjection] = useState("EPSG:26191");
+  const exp = useDisclosure(false);
+  const projection = useState("EPSG:26191");
 
   useEffect(() => {
     if (ref.current)
       MapManager.init(ref.current, {
-        export: proj,
+        projModal: proj,
+        exportModal: exp,
+        importModal: exp,
       });
+
+    const mapElement = document.getElementById("k_map");
+    if (mapElement) mapElement.style.height = `${window.innerHeight}px`;
   }, []);
 
   useEffect(() => {
-    MapManager.projection = projection;
+    MapManager.projection = projection[0];
   }, [projection]);
 
   return (
     <>
-      <KProjectionModal
-        projection={projection}
-        setProjection={setProjection}
-        opened={proj[0]}
-        close={proj[1].close}
-      />
+      <KExportModal disclosure={exp} />
+      <KProjectionModal projection={projection} disclosure={proj} />
       <Paper id="k_map" p={"md"} ref={ref} />
     </>
   );
