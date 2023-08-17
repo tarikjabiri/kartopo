@@ -1,4 +1,4 @@
-import { Colors, DxfWriter, LWPolylineFlags, point3d } from "@tarikjabiri/dxf";
+import { DxfWriter, LWPolylineFlags, point3d } from "@tarikjabiri/dxf";
 import * as L from "leaflet";
 import { MapManager } from ".";
 
@@ -12,10 +12,7 @@ export interface Shape {
   layer: L.Layer;
 }
 
-function isPolygon(
-  shape: string,
-  workingLayer: L.Layer
-): workingLayer is L.Polygon {
+function isPolygon(shape: string) {
   return shape === "Polygon";
 }
 
@@ -40,8 +37,8 @@ export class Layer {
 
   dxfy(writer: DxfWriter) {
     this.shapes.forEach((shape) => {
-      if (isPolygon(shape.shape, shape.workingLayer))
-        this.dxfyPolygon(writer, shape.workingLayer);
+      if (isPolygon(shape.shape))
+        this.dxfyPolygon(writer, shape.workingLayer as L.Polygon);
     });
   }
 
