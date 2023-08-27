@@ -41,7 +41,6 @@ export class DXFImport {
     return new Promise((resolve) => {
       const input = document.createElement("input");
       input.type = "file";
-      input.accept = ".dxf";
       input.onchange = () => {
         if (!input.files) return;
         const file = input.files[0];
