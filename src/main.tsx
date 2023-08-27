@@ -1,10 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import KCApp from "@components/KCApp.tsx";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+const rootElement = document.getElementById("root");
+
+if (rootElement == null) throw new Error("No root element found!");
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <KCApp />
+  </StrictMode>
+);

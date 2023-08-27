@@ -1,135 +1,81 @@
-import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "@geoman-io/leaflet-geoman-free";
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
-import "leaflet.gridlayer.googlemutant/dist/Leaflet.GoogleMutant.js";
-import {
-  CoordsControl,
-  ExportControl,
-  LayersControl,
-  ProjControl,
-} from "./controls";
-import { useDisclosure } from "@mantine/hooks";
-import "./defs";
-import { Layer } from "./layer";
-import { DxfWriter } from "@tarikjabiri/dxf";
-import FileSaver from "file-saver";
-import proj4 from "proj4";
-import { FeatureCollection } from "geojson";
-import { now } from "./date";
+import "@geoman-io/leaflet-geoman-free";
+import "./proj4";
+import { TGoogleMaps, ILayer } from "@types";
+import { Map, MapOptions, PM, Path, map, tileLayer } from "leaflet";
+import { FilesControl, LayersControl } from "./controls";
+import { LayersManager } from "./layers";
 
-export interface MapManagerOptions {
-  projModal: ReturnType<typeof useDisclosure>;
-  exportModal: ReturnType<typeof useDisclosure>;
-  importModal: ReturnType<typeof useDisclosure>;
+const mapOptions: MapOptions = {
+  attributionControl: false,
+  maxZoom: 22,
+};
+
+const pmToolbarOptions: PM.ToolbarOptions = {
+  drawCircleMarker: false,
+  drawCircle: false,
+  drawText: false,
+  drawRectangle: false,
+  rotateMode: false,
+  cutPolygon: false,
+};
+
+function google(type?: TGoogleMaps) {
+  let lyrs = "m";
+  if (type === "SATELLITE") lyrs = "s";
+  else if (type === "SATELLITE_HYBRID") lyrs = "y";
+  else if (type === "TERRAIN") lyrs = "t";
+  else if (type === "TERRAIN_HYBRID") lyrs = "p";
+  else if (type === "ROADS") lyrs = "h";
+
+  return tileLayer(`https://{s}.google.com/vt/lyrs=${lyrs}&x={x}&y={y}&z={z}`, {
+    maxZoom: 22,
+    subdomains: ["mt0", "mt1", "mt2", "mt3"],
+  });
 }
 
-export class MapManager {
-  static map?: L.Map;
-  static projection: string = "EPSG:26191";
-  static currentLayer: Layer = new Layer("0", "#ffffff");
+export class KMap {
+  static map: Map;
+  static layer: ILayer;
+  static manager: LayersManager;
 
-  static temp: L.Layer;
+  static init(element: HTMLElement) {
+    if (KMap.map) return;
+    KMap.map = map(element, mapOptions);
+    KMap.map.setView([32.0532, -7.4071], 18);
+    google("SATELLITE_HYBRID").addTo(KMap.map);
 
-  static options(): L.MapOptions {
-    return {
-      attributionControl: false,
-    };
-  }
 
-  static converter() {
-    return proj4(MapManager.projection);
-  }
 
-  static init(element: HTMLElement, options: MapManagerOptions) {
-    if (MapManager.map) return;
-    MapManager.map = L.map(element, MapManager.options());
-    MapManager.map.setView([32.0532, -7.4071], 5);
-    // L.tileLayer(
-    //   "http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}"
-    // ).addTo(MapManager.map);
 
-    L.gridLayer
-      .googleMutant({
-        type: "hybrid", // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
-      })
-      .addTo(MapManager.map);
-
-    MapManager.map.addControl(new ProjControl(options.projModal));
-    MapManager.map.addControl(new LayersControl());
-    MapManager.map.addControl(new ExportControl(options));
-    MapManager.map.addControl(new CoordsControl());
-    MapManager.map.pm.addControls({
-      position: "topleft",
-      drawCircleMarker: false,
-      drawCircle: false,
-      drawText: false,
-      drawRectangle: false,
-      rotateMode: false,
-      cutPolygon: false,
+    KMap.map.addControl(LayersControl.instance());
+    KMap.map.addControl(FilesControl.instance());
+    KMap.map.pm.addControls(pmToolbarOptions);
+    KMap.map.pm.setGlobalOptions({
+      limitMarkersToCount: 30,
+      limitMarkersToZoom: 30,
+      limitMarkersToViewport: true,
     });
 
-    MapManager.map.on("pm:drawstart", (e) => {
-      MapManager.temp = e.workingLayer;
-      console.log(e.workingLayer);
-      MapManager.currentLayer.add(e);
+    KMap.map.on("pm:create", (e) => {
+      KMap.layer.shapes.push(e.layer);
+      if (e.layer instanceof Path) KMap.manager.style(KMap.layer.name);
     });
 
-    MapManager.map.on("pm:remove", (e) => {
-      console.log(e.layer === MapManager.temp);
-      MapManager.currentLayer.remove(e);
+    KMap.map.on("pm:remove", (e) => {
+      KMap.layer.shapes = KMap.layer.shapes.filter((l) => l !== e.layer);
     });
   }
 
-  static dxfy() {
-    if (!MapManager.map) return;
-    const dxf = new DxfWriter();
-    MapManager.currentLayer.dxfy(dxf);
-
-    const fileName = prompt(
-      "Veuillez entrer un nom de fichier",
-      `DXF_${now()}`
-    );
-
-    if (fileName) {
-      FileSaver(
-        new Blob([dxf.stringify()], { type: "application/dxf" }),
-        `${fileName}.dxf`,
-        { autoBom: false }
-      );
-    }
-  }
-
-  static geojson() {
-    if (!MapManager.map) return;
-    const collection: FeatureCollection = {
-      type: "FeatureCollection",
-      features: [],
-    };
-
-    L.PM.Utils.findLayers(MapManager.map).forEach((layer) => {
-      if (
-        layer instanceof L.Polygon ||
-        layer instanceof L.Marker ||
-        layer instanceof L.Polyline
-      ) {
-        collection.features.push(layer.toGeoJSON());
-      }
+  static layerChange(layerName: string, manager: LayersManager) {
+    KMap.manager = manager;
+    const layer = manager.layers.find((l) => l.name === layerName);
+    if (layer == null) return;
+    KMap.layer = layer;
+    KMap.map.pm.setGlobalOptions({
+      templineStyle: { color: layer.color },
+      hintlineStyle: { color: layer.color, dashArray: [5, 5] },
     });
-
-    const fileName = prompt(
-      "Veuillez entrer un nom de fichier",
-      `GeoJSON_${now()}`
-    );
-
-    if (fileName) {
-      FileSaver(
-        new Blob([JSON.stringify(collection)], {
-          type: "application/geo+json",
-        }),
-        `${fileName}.geojson`,
-        { autoBom: false }
-      );
-    }
   }
 }

@@ -1,16 +1,15 @@
 import { Control, DomUtil } from "leaflet";
 import { IModalControl } from "@types";
 
-export class LayersControl extends Control implements IModalControl {
+export class FilesControl extends Control implements IModalControl {
   open: (() => void) | null = null;
-  private static _instance: LayersControl;
+  private static _instance: FilesControl;
 
   static instance() {
-    if (LayersControl._instance == null)
-      LayersControl._instance = new LayersControl();
-    return LayersControl._instance;
+    if (FilesControl._instance == null)
+      FilesControl._instance = new FilesControl();
+    return FilesControl._instance;
   }
-
   onAdd(): HTMLElement {
     let div = document.getElementById("k__files");
     if (div == null) {
@@ -20,13 +19,13 @@ export class LayersControl extends Control implements IModalControl {
     }
     const a = DomUtil.create("a");
     a.setAttribute("role", "button");
-    a.title = "Layers";
+    a.title = "Import/Export";
     a.href = "#";
 
     a.addEventListener("click", this._click.bind(this));
 
     const i = DomUtil.create("i");
-    i.classList.add("fa-solid", "fa-layer-group");
+    i.classList.add("fa-solid", "fa-file");
 
     a.appendChild(i);
 
