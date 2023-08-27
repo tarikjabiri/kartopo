@@ -19,6 +19,7 @@ export class LayersControl extends Control implements IModalControl {
       div.classList.add("leaflet-control", "leaflet-bar");
     }
     const a = DomUtil.create("a");
+    a.style.color = "#4d4d4d";
     a.setAttribute("role", "button");
     a.title = "Layers";
     a.href = "#";

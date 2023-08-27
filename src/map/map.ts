@@ -6,6 +6,7 @@ import { TGoogleMaps, ILayer } from "@types";
 import { Map, MapOptions, PM, Path, map, tileLayer } from "leaflet";
 import { FilesControl, LayersControl } from "./controls";
 import { LayersManager } from "./layers";
+import { CoordinatesControl } from "./controls/coordinates";
 
 const mapOptions: MapOptions = {
   attributionControl: false,
@@ -46,11 +47,9 @@ export class KMap {
     KMap.map.setView([32.0532, -7.4071], 18);
     google("SATELLITE_HYBRID").addTo(KMap.map);
 
-
-
-
     KMap.map.addControl(LayersControl.instance());
     KMap.map.addControl(FilesControl.instance());
+    KMap.map.addControl(new CoordinatesControl());
     KMap.map.pm.addControls(pmToolbarOptions);
     KMap.map.pm.setGlobalOptions({
       limitMarkersToCount: 30,
