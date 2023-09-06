@@ -1,9 +1,11 @@
 import "leaflet/dist/leaflet.css";
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
+import "leaflet.locatecontrol/dist/L.Control.Locate.css";
 import "@geoman-io/leaflet-geoman-free";
+import "leaflet.locatecontrol/dist/L.Control.Locate.min.js";
 import "./proj4";
 import { TGoogleMaps, ILayer } from "@types";
-import { Map, MapOptions, PM, Path, map, tileLayer } from "leaflet";
+import { Map, MapOptions, PM, Path, control, map, tileLayer } from "leaflet";
 import { FilesControl, LayersControl } from "./controls";
 import { LayersManager } from "./layers";
 import { CoordinatesControl } from "./controls/coordinates";
@@ -44,7 +46,10 @@ export class KMap {
   static init(element: HTMLElement) {
     if (KMap.map) return;
     KMap.map = map(element, mapOptions);
-    KMap.map.setView([32.0532, -7.4071], parseInt(import.meta.env.VITE_MAP_ZOOM));
+    KMap.map.setView(
+      [32.0532, -7.4071],
+      parseInt(import.meta.env.VITE_MAP_ZOOM)
+    );
     google("SATELLITE_HYBRID").addTo(KMap.map);
 
     KMap.map.addControl(LayersControl.instance());
@@ -65,6 +70,10 @@ export class KMap {
     KMap.map.on("pm:remove", (e) => {
       KMap.layer.shapes = KMap.layer.shapes.filter((l) => l !== e.layer);
     });
+
+    control.locate({
+      position: "topright"
+    }).addTo(KMap.map);
   }
 
   static layerChange(layerName: string, manager: LayersManager) {
