@@ -44,7 +44,7 @@ export class KMap {
   static init(element: HTMLElement) {
     if (KMap.map) return;
     KMap.map = map(element, mapOptions);
-    KMap.map.setView([32.0532, -7.4071], 18);
+    KMap.map.setView([32.0532, -7.4071], parseInt(import.meta.env.VITE_MAP_ZOOM));
     google("SATELLITE_HYBRID").addTo(KMap.map);
 
     KMap.map.addControl(LayersControl.instance());
