@@ -1,9 +1,10 @@
 import {
   Colors,
-  DxfWriter,
+  Writer,
   LWPolylineFlags,
   TrueColor,
-  point3d,
+  point,
+  Block,
 } from "@tarikjabiri/dxf";
 import { ILayer } from "@types";
 import FileSaver from "file-saver";
@@ -13,77 +14,73 @@ import { converter } from "../utils";
 
 export class DXFExport {
   export(layers: ILayer[]) {
-    const dxf = new DxfWriter();
+    const writer = new Writer();
+    const modelSpace = writer.document.modelSpace;
+    const layerTable = writer.document.tables.layer;
 
-    layers.forEach((layer) => {
-      const _closestColor = closestColor(layer.color);
-      const aciColor = _closestColor ? _closestColor[1] : Colors.White;
-      const trueColor = TrueColor.fromHex(layer.color);
+    layers.forEach(({ name, color, shapes }) => {
+      const _closestColor = closestColor(color);
+      const colorNumber = _closestColor ? _closestColor[1] : Colors.White;
+      const trueColor = TrueColor.fromHex(color);
 
-      if (layer.name !== "0") {
-        const _layer = dxf.addLayer(layer.name, aciColor);
-        _layer.trueColor = trueColor;
-        dxf.setCurrentLayerName(_layer.name);
+      if (name !== "0") {
+        const _layer = layerTable.add({ name, colorNumber, trueColor });
+        modelSpace.currentLayerName = _layer.name;
       } else {
-        const _zero = dxf.layer("0");
+        const _zero = layerTable.get("0");
         if (_zero) {
-          _zero.colorNumber = aciColor;
+          _zero.colorNumber = colorNumber;
           _zero.trueColor = trueColor;
         }
       }
 
-      layer.shapes.forEach((shape) => {
-        if (shape instanceof Polygon) this._polygon(dxf, shape);
-        else if (shape instanceof Polyline) this._polyline(dxf, shape);
-        else if (shape instanceof Marker) this._marker(dxf, shape);
+      shapes.forEach((shape) => {
+        if (shape instanceof Polygon) this._polygon(modelSpace, shape);
+        else if (shape instanceof Polyline) this._polyline(modelSpace, shape);
+        else if (shape instanceof Marker) this._marker(modelSpace, shape);
       });
     });
 
     FileSaver(
-      new Blob([dxf.stringify()], { type: "application/dxf" }),
+      new Blob([writer.stringify()], { type: "application/dxf" }),
       `dxf-export.dxf`,
       { autoBom: false }
     );
   }
 
-  private _polygon(dxf: DxfWriter, polygon: Polygon) {
-    const _polygon = dxf.addLWPolyline([], {
-      flags: LWPolylineFlags.Closed,
-    });
+  private _polygon(block: Block, polygon: Polygon) {
+    const _polygon = block.addLWPolyline({ flags: LWPolylineFlags.Closed });
 
     polygon.getLatLngs().forEach((p) => {
       if (p instanceof LatLng) {
-        _polygon.vertices.push({
-          point: point3d(...converter("EPSG:26191").forward([p.lng, p.lat])),
-        });
+        _polygon.vertices.push(
+          point(...converter("EPSG:26191").forward([p.lng, p.lat]))
+        );
       } else if (Array.isArray(p)) {
         p.forEach((p2) => {
           if (p2 instanceof LatLng) {
-            _polygon.vertices.push({
-              point: point3d(
-                ...converter("EPSG:26191").forward([p2.lng, p2.lat])
-              ),
-            });
+            _polygon.vertices.push(
+              point(...converter("EPSG:26191").forward([p2.lng, p2.lat]))
+            );
           }
         });
       }
     });
   }
 
-  private _polyline(dxf: DxfWriter, polyline: Polyline) {
-    const _polyline = dxf.addLWPolyline([]);
+  private _polyline(block: Block, polyline: Polyline) {
+    const _polyline = block.addLWPolyline({});
     polyline.getLatLngs().forEach((p) => {
       if (p instanceof LatLng) {
-        _polyline.vertices.push({
-          point: point3d(...converter("EPSG:26191").forward([p.lng, p.lat])),
-        });
+        _polyline.vertices.push(
+          point(...converter("EPSG:26191").forward([p.lng, p.lat]))
+        );
       }
     });
   }
 
-  private _marker(dxf: DxfWriter, marker: Marker) {
+  private _marker(block: Block, marker: Marker) {
     const p = marker.getLatLng();
-    const _p = point3d(...converter("EPSG:26191").forward([p.lng, p.lat]));
-    dxf.addPoint(_p.x, _p.y, _p.z);
+    block.addPoint(point(...converter("EPSG:26191").forward([p.lng, p.lat])));
   }
 }
